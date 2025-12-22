@@ -22,8 +22,10 @@ export interface User {
 }
 
 export interface LoginResponse {
-  token: string;
-  user: User;
+  token?: string;
+  user?: User;
+  status?: string;
+  message?: string;
 }
 
 export interface GateLog {

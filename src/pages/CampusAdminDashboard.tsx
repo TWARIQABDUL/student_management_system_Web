@@ -5,6 +5,7 @@ import StatCard from '../components/StatCard';
 import StudentsTab from '../components/StudentsTab';
 import AccessLogsTab from '../components/AccessLogsTab';
 import SettingsTab from '../components/SettingsTab';
+import AddStudentForm from '../components/AddStudentForm';
 import { api } from '../services/api';
 import { DashboardStats } from '../types';
 import { useAuth } from '../context/AuthContext';
@@ -107,6 +108,7 @@ export default function CampusAdminDashboard() {
                       <p className="text-sm text-gray-600">Configure campus settings</p>
                     </button>
                     <button
+                      onClick={() => setActiveTab('add-student')}
                       className="p-4 border-2 border-gray-200 rounded-lg hover:border-gray-300 transition text-left"
                       style={{ borderColor: `${primaryColor}40`, backgroundColor: `${primaryColor}05` }}
                     >
@@ -126,6 +128,13 @@ export default function CampusAdminDashboard() {
         {activeTab === 'students' && <StudentsTab primaryColor={primaryColor} />}
         {activeTab === 'access-logs' && <AccessLogsTab primaryColor={primaryColor} />}
         {activeTab === 'settings' && <SettingsTab primaryColor={primaryColor} />}
+        {activeTab === 'add-student' && (
+          <AddStudentForm
+            primaryColor={primaryColor}
+            onSuccess={() => setActiveTab('students')}
+            onCancel={() => setActiveTab('dashboard')}
+          />
+        )}
       </div>
     </div>
   );

@@ -27,10 +27,35 @@ export const api = {
         body: JSON.stringify({ email, password }),
       });
 
-      if (!response.ok) throw new Error('Login failed');
+      // The backend may return 200 OK for FORCE_CHANGE_PASSWORD
+      // or error codes for actual failures.
+      if (!response.ok) {
+         // Try to parse error message if available
+         const errorData = await response.json().catch(() => ({}));
+         throw new Error(errorData.message || 'Login failed');
+      }
       return await response.json();
     } catch (error) {
       console.error('Login error:', error);
+      throw error;
+    }
+  },
+
+  async changeFirstPassword(email: string, oldPassword: string, newPassword: string): Promise<LoginResponse> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/change-first-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, oldPassword, newPassword }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to change password');
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Change password error:', error);
       throw error;
     }
   },
@@ -63,6 +88,22 @@ export const api = {
     }
   },
 
+  async createStudent(data: any): Promise<Student> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/students`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) throw new Error('Failed to create student');
+      return await response.json();
+    } catch (error) {
+      console.error('Failed to create student:', error);
+      throw error;
+    }
+  },
+
   async getCampuses(): Promise<Campus[]> {
     try {
       const response = await fetch(`${API_BASE_URL}/campuses`, {
@@ -73,6 +114,22 @@ export const api = {
       return await response.json();
     } catch (error) {
       console.error('Failed to fetch campuses:', error);
+      throw error;
+    }
+  },
+
+  async createCampus(data: Campus): Promise<Campus> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/campuses`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) throw new Error('Failed to create campus');
+      return await response.json();
+    } catch (error) {
+      console.error('Failed to create campus:', error);
       throw error;
     }
   },
