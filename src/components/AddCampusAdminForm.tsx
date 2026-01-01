@@ -30,7 +30,7 @@ export default function AddCampusAdminForm({ onSuccess, onCancel }: AddCampusAdm
       const data = await api.getCampuses();
       setCampuses(data);
       if (data.length > 0) {
-        setFormData(prev => ({ ...prev, campusId: data[0].id?.toString() || '' }));
+        setFormData(prev => ({ ...prev, campusId: (data[0].id || data[0].campusId)?.toString() || '' }));
       }
     } catch (err) {
       console.error('Failed to load campuses', err);
@@ -151,7 +151,7 @@ export default function AddCampusAdminForm({ onSuccess, onCancel }: AddCampusAdm
                 >
                   <option value="">Select a Campus</option>
                   {campuses.map(campus => (
-                    <option key={campus.id} value={campus.id}>
+                    <option key={campus.id || campus.campusId} value={campus.id || campus.campusId}>
                       {campus.name}
                     </option>
                   ))}

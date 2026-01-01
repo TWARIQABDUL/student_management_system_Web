@@ -1,6 +1,6 @@
 import { LoginResponse, GateLog, Student, DashboardStats, Campus } from '../types';
 
-const API_BASE_URL = 'https://student-smart-card-backend.onrender.com/api/v1';
+const API_BASE_URL = 'https://api.electronsedgesolutions.tech/api/v1';
 
 
 
@@ -130,6 +130,34 @@ export const api = {
       return await response.json();
     } catch (error) {
       console.error('Failed to create campus:', error);
+      throw error;
+    }
+  },
+
+  async getCampus(campusId: string): Promise<Campus> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/campuses/${campusId}`, {
+        headers: getAuthHeaders(),
+      });
+
+      if (!response.ok) throw new Error('Failed to fetch campus');
+      return await response.json();
+    } catch (error) {
+      console.error('Failed to fetch campus:', error);
+      throw error;
+    }
+  },
+
+  async startBuild(campusId: string): Promise<void> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/builds/${campusId}`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+      });
+
+      if (!response.ok) throw new Error('Failed to start build');
+    } catch (error) {
+      console.error('Failed to start build:', error);
       throw error;
     }
   },

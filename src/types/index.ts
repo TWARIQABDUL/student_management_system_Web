@@ -1,5 +1,6 @@
 export interface Campus {
   id?: string | number;
+  campusId?: string | number;
   name: string;
   abrev: string;
   primaryColor: string;
@@ -7,6 +8,9 @@ export interface Campus {
   backgroundColor?: string;
   logoUrl?: string;
   cardTextColor?: string;
+  packageId?: string | null;
+  apkUrl?: string | null;
+  buildStatus?: 'NOT_STARTED' | 'IN_PROGRESS' | 'SUCCESS' | 'FAILED';
 }
 
 export interface User {

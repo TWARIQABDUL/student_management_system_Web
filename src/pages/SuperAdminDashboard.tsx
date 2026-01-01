@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Building2, DollarSign, Activity, Plus, UserPlus } from 'lucide-react';
+import { Building2, DollarSign, Activity, Plus, UserPlus, Download, Loader2, Smartphone } from 'lucide-react';
 import Sidebar from '../components/Sidebar';
 import StatCard from '../components/StatCard';
 import { api } from '../services/api';
@@ -16,6 +16,36 @@ export default function SuperAdminDashboard() {
   useEffect(() => {
     loadData();
   }, []);
+
+  // Polling for build status
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    
+    // Check if any campus is building
+    const isBuilding = campuses.some(c => c.buildStatus === 'IN_PROGRESS');
+    
+    if (isBuilding) {
+      interval = setInterval(async () => {
+        const campusesData = await api.getCampuses();
+        setCampuses(campusesData);
+      }, 5000);
+    }
+
+    return () => clearInterval(interval);
+  }, [campuses]);
+
+  const handleBuildApk = async (campusId: string) => {
+    try {
+      await api.startBuild(campusId);
+      // Optimistic update
+      setCampuses(current => current.map(c => 
+        String(c.id || c.campusId) === String(campusId) ? { ...c, buildStatus: 'IN_PROGRESS' } : c
+      ));
+    } catch (error) {
+      console.error('Failed to start build', error);
+      alert('Failed to start build');
+    }
+  };
 
   const loadData = async () => {
     setIsLoading(true);
@@ -116,7 +146,7 @@ export default function SuperAdminDashboard() {
                       <tbody>
                         {campuses.map((campus) => (
                           <tr
-                            key={campus.id}
+                            key={campus.id || campus.campusId}
                             className="border-b border-gray-100 hover:bg-gray-50 transition"
                           >
                             <td className="py-4 px-4">
@@ -165,9 +195,45 @@ export default function SuperAdminDashboard() {
                               </span>
                             </td>
                             <td className="py-4 px-4">
-                              <button className="text-blue-600 hover:text-blue-700 font-medium text-sm">
-                                Manage
-                              </button>
+                              <div className="flex items-center space-x-3">
+                                <button className="text-blue-600 hover:text-blue-700 font-medium text-sm">
+                                  Manage
+                                </button>
+                                
+                                {campus.buildStatus === 'IN_PROGRESS' ? (
+                                  <div className="flex items-center text-amber-600 text-sm">
+                                    <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                                    <span>Building...</span>
+                                  </div>
+                                ) : campus.buildStatus === 'SUCCESS' && campus.apkUrl ? (
+                                  <div className="flex items-center space-x-2">
+                                    <a 
+                                      href={campus.apkUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center text-green-600 hover:text-green-700 text-sm font-medium"
+                                    >
+                                      <Download className="w-4 h-4 mr-1" />
+                                      APK
+                                    </a>
+                                    <button
+                                      onClick={() => handleBuildApk(String(campus.id || campus.campusId))}
+                                      title="Rebuild APK"
+                                      className="text-gray-400 hover:text-blue-600"
+                                    >
+                                      <Loader2 className="w-4 h-4" />
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <button
+                                    onClick={() => handleBuildApk(String(campus.id || campus.campusId))}
+                                    className="flex items-center text-gray-600 hover:text-blue-600 text-sm font-medium"
+                                  >
+                                    <Smartphone className="w-4 h-4 mr-1" />
+                                    Build
+                                  </button>
+                                )}
+                              </div>
                             </td>
                           </tr>
                         ))}
@@ -226,7 +292,7 @@ export default function SuperAdminDashboard() {
                     <tbody>
                     {campuses.map((campus) => (
                         <tr
-                        key={campus.id}
+                        key={campus.id || campus.campusId}
                         className="border-b border-gray-100 hover:bg-gray-50 transition"
                         >
                         <td className="py-4 px-4">
@@ -275,10 +341,46 @@ export default function SuperAdminDashboard() {
                             </span>
                         </td>
                         <td className="py-4 px-4">
-                            <button className="text-blue-600 hover:text-blue-700 font-medium text-sm">
-                            Manage
-                            </button>
-                        </td>
+                              <div className="flex items-center space-x-3">
+                                <button className="text-blue-600 hover:text-blue-700 font-medium text-sm">
+                                  Manage
+                                </button>
+                                
+                                {campus.buildStatus === 'IN_PROGRESS' ? (
+                                  <div className="flex items-center text-amber-600 text-sm">
+                                    <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                                    <span>Building...</span>
+                                  </div>
+                                ) : campus.buildStatus === 'SUCCESS' && campus.apkUrl ? (
+                                  <div className="flex items-center space-x-2">
+                                    <a 
+                                      href={campus.apkUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="flex items-center text-green-600 hover:text-green-700 text-sm font-medium"
+                                    >
+                                      <Download className="w-4 h-4 mr-1" />
+                                      APK
+                                    </a>
+                                    <button
+                                      onClick={() => handleBuildApk(String(campus.id || campus.campusId))}
+                                      title="Rebuild APK"
+                                      className="text-gray-400 hover:text-blue-600"
+                                    >
+                                      <Loader2 className="w-4 h-4" />
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <button
+                                    onClick={() => handleBuildApk(String(campus.id || campus.campusId))}
+                                    className="flex items-center text-gray-600 hover:text-blue-600 text-sm font-medium"
+                                  >
+                                    <Smartphone className="w-4 h-4 mr-1" />
+                                    Build
+                                  </button>
+                                )}
+                              </div>
+                            </td>
                         </tr>
                     ))}
                     </tbody>
